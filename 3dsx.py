@@ -170,7 +170,7 @@ def load_file(li, neflags, format):
                                 in_addr -= pos
 
                             try:
-                                if getseg(in_addr).name != '.text':
+                                if in_addr > code_seg.end:
                                     if not Name(in_addr):
                                         if not MakeStr(in_addr, BADADDR):
                                             MakeDword(in_addr)

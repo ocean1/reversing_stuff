@@ -11,17 +11,17 @@ BASE_ADDR = 0x00100000
 
 def accept_file(li, n):
 
-    retval = 0
+    if n > 0:
+        return 0
 
-    if n == 0:
-        li.seek(0)
+    li.seek(0)
 
-        # Make sure this is a bFLT v4 file
-        if li.read(4) == DSX_MAGIC:
-            idaapi.set_processor_type(DEFAULT_CPU, SETPROC_ALL)
-            retval = "%s executable" % (DSX_MAGIC)
+    # Make sure this is a bFLT v4 file
+    if li.read(4) == DSX_MAGIC:
+        idaapi.set_processor_type(DEFAULT_CPU, SETPROC_ALL)
+        return "%s executable" % (DSX_MAGIC)
 
-    return retval
+    return 0
 
 
 class SegmentInfo(object):
@@ -165,9 +165,13 @@ def load_file(li, neflags, format):
 
                             in_addr = translate_addr(addr)
 
+                            fixup_type = idaapi.FIXUP_OFF32
                             if current_reloc_table == 1:
                                 #  this is the relative reloc table
                                 in_addr -= pos
+                                print '%.8X'
+                                # not really sure about this:
+                                fixup_type |= idaapi.FIXUP_REL
 
                             try:
                                 if in_addr > code_seg.end:
@@ -177,10 +181,14 @@ def load_file(li, neflags, format):
                             except:
                                 print "error in data analysis of %.8X: %.8X <- %.8X" % (
                                     pos, addr, in_addr)
-
+                            # patching the dword with the relocation
                             PatchDword(pos, in_addr)
+                            # this tells IDA Pro kernel that this is a fixup
+                            # (https://www.hex-rays.com/products/ida/tech/flirt/in_depth.shtml)
+                            # setfixup is the IDC function https://idapython.googlecode.com/svn-history/r2/trunk/python/idc.py
+                            # idaapi C++ proxy is fixup_data_t -> set_fixup
                             SetFixup(
-                                pos, idaapi.FIXUP_OFF32 | idaapi.FIXUP_CREATED,
+                                pos, fixup_type | idaapi.FIXUP_CREATED,
                                 0, in_addr, 0)
 
                             if DEBUG:

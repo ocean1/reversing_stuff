@@ -169,7 +169,6 @@ def load_file(li, neflags, format):
                             if current_reloc_table == 1:
                                 #  this is the relative reloc table
                                 in_addr -= pos
-                                print '%.8X'
                                 # not really sure about this:
                                 fixup_type |= idaapi.FIXUP_REL
 

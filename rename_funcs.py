@@ -40,10 +40,7 @@ if __name__ == "__main__":
 
     for nlist, dlist in zip(out.splitlines(), out_demangled.splitlines()):
         a, t, name = nlist.split(" ")
-        d = dlist.split(" ")
-        ad = d[0]
-        td = d[1]
-        named = " ".join(d[2:])
+        ad, td, named = dlist.split(" ", 2)
 
         if a != ad:
             raise Exception("error processing %s/%s, %s != %s".format(
